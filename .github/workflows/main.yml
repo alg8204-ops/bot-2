@@ -1,4 +1,4 @@
-name: BTC Signal Bot
+nname: BTC Signal Bot
 
 "on":
   workflow_dispatch:
@@ -31,17 +31,3 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           python run_scheduled.py
-
-      - name: Guardar estado
-        if: always()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          if [ -f state.json ]; then
-            git add state.json
-            git diff --cached --quiet || git commit -m "Update bot state"
-            git push
-          else
-            echo "No se ha generado state.json"
-          fi
