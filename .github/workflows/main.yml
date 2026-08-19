@@ -1,4 +1,4 @@
-nname: BTC Signal Bot
+name: BTC Signal Bot
 
 "on":
   workflow_dispatch:
