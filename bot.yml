@@ -1,0 +1,46 @@
+name: Bot BTC intradia
+
+# Se puede correr manualmente desde la pestaña "Actions" (workflow_dispatch) y ademas
+# se programa cada 15 minutos. GitHub no garantiza el minuto exacto, sobre todo en
+# horarios de mucho uso -- para este bot esa variacion no es un problema.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    # Necesario para poder guardar state.json y trade_journal.csv de vuelta en el repo.
+    permissions:
+      contents: write
+
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Correr un ciclo del bot
+        env:
+          DATA_MODE: ${{ secrets.DATA_MODE }}
+          EXECUTION_MODE: ${{ secrets.EXECUTION_MODE }}
+          EXCHANGE_API_KEY: ${{ secrets.EXCHANGE_API_KEY }}
+          EXCHANGE_API_SECRET: ${{ secrets.EXCHANGE_API_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python run_scheduled.py
+
+      - name: Guardar el estado de vuelta en el repositorio
+        run: |
+          git config user.name "btc-bot"
+          git config user.email "btc-bot@users.noreply.github.com"
+          git add state.json trade_journal.csv
+          git diff --staged --quiet || git commit -m "Actualiza estado del bot"
+          git push
